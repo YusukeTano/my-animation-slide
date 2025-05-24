@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Git Complete Guide - Future UI</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+            color: #fff;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        .slides-container {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .slide {
+            display: none;
+            width: 90%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .slide.active {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .slide h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #00d4ff, #5b86e5, #36d1dc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-align: center;
+            margin-bottom: 1rem;
+            text-shadow: 0 0 30px rgba(0, 212, 255, 0.3);
+        }
+
+        .slide h2 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #ff6b6b, #feca57);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .slide h3 {
+            font-size: 1.8rem;
+            color: #00d4ff;
+            margin-bottom: 1rem;
+            position: relative;
+        }
+
+        .slide h3::before {
+            content: '';
+            position: absolute;
+            left: -20px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(to bottom, #00d4ff, #36d1dc);
+            border-radius: 2px;
+        }
+
+        .concept-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .concept-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .concept-card:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 212, 255, 0.1);
+        }
+
+        .concept-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, #00d4ff, #5b86e5, #36d1dc);
+        }
+
+        .workflow-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin: 2rem 0;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .workflow-step {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border-radius: 15px;
+            padding: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+            flex: 1;
+            min-width: 200px;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .workflow-step:hover {
+            background: rgba(0, 212, 255, 0.1);
+            transform: scale(1.05);
+        }
+
+        .workflow-step::after {
+            content: '→';
+            position: absolute;
+            right: -15px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.5rem;
+            color: #00d4ff;
+        }
+
+        .workflow-step:last-child::after {
+            display: none;
+        }
+
+        .command-box {
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 10px;
+            padding: 1rem;
+            margin: 1rem 0;
+            font-family: 'Monaco', 'Consolas', monospace;
+            border-left: 4px solid #00d4ff;
+            position: relative;
+        }
+
+        .command-box::before {
+            content: '$';
+            color: #00d4ff;
+            margin-right: 0.5rem;
+        }
+
+        .branch-diagram {
+            display: flex;
+            align-items: center;
+            margin: 2rem 0;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 2rem;
+        }
+
+        .branch-item {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border-radius: 15px;
+            padding: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+            min-width: 150px;
+            position: relative;
+        }
+
+        .branch-main {
+            border: 2px solid #ff6b6b;
+            background: rgba(255, 107, 107, 0.1);
+        }
+
+        .branch-develop {
+            border: 2px solid #feca57;
+            background: rgba(254, 202, 87, 0.1);
+        }
+
+        .branch-feature {
+            border: 2px solid #48dbfb;
+            background: rgba(72, 219, 251, 0.1);
+        }
+
+        .controls {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 1rem;
+            z-index: 1000;
+        }
+
+        .btn {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50px;
+            padding: 0.8rem 2rem;
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .btn:hover {
+            background: rgba(0, 212, 255, 0.2);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 212, 255, 0.2);
+        }
+
+        .slide-indicator {
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .indicator-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .indicator-dot.active {
+            background: #00d4ff;
+            box-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+        }
+
+        .flow-chart {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            align-items: center;
+            margin: 2rem 0;
+        }
+
+        .flow-item {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border-radius: 15px;
+            padding: 1.5rem;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+        }
+
+        .flow-item::after {
+            content: '→';
+            position: absolute;
+            right: -15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #00d4ff;
+            font-size: 1.5rem;
+        }
+
+        .flow-item:last-child::after {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .slide h1 { font-size: 2.5rem; }
+            .slide h2 { font-size: 2rem; }
+            .workflow-container { flex-direction: column; }
+            .flow-chart { grid-template-columns: 1fr; }
+            .flow-item::after { display: none; }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.8s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+    </style>
+</head>
+<body>
+    <div class="slides-container">
+        <!-- スライド1: タイトル -->
+        <div class="slide active">
+            <h1 class="pulse">Git Complete Guide</h1>
+            <div style="text-align: center; margin-top: 3rem;">
+                <div style="font-size: 1.5rem; color: #36d1dc; margin-bottom: 2rem;">
+                    バージョン管理の完全理解
+                </div>
+                <div style="background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(20px); border-radius: 20px; padding: 2rem; border: 1px solid rgba(255, 255, 255, 0.1);">
+                    <p style="font-size: 1.2rem; line-height: 1.8;">
+                        🚀 モダンな開発において必須のGitを<br>
+                        基本概念から実践的な使い方まで完全解説
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- スライド2: 基本概念 -->
+        <div class="slide">
+            <h2>Git基本概念</h2>
+            <div class="concept-grid">
+                <div class="concept-card fade-in">
+                    <h3>📁 リポジトリ</h3>
+                    <p><strong>ローカル:</strong> あなたのPC上の作業場所</p>
+                    <p><strong>リモート:</strong> サーバー上の共有場所</p>
+                    <div style="margin-top: 1rem; padding: 1rem; background: rgba(0, 212, 255, 0.1); border-radius: 10px;">
+                        プロジェクトの全てのファイルと変更履歴を格納
+                    </div>
+                </div>
+                <div class="concept-card fade-in">
+                    <h3>🌿 ブランチ</h3>
+                    <p><strong>並行作業:</strong> 複数の機能を同時開発</p>
+                    <p><strong>安全性:</strong> メインコードに影響なし</p>
+                    <div style="margin-top: 1rem; padding: 1rem; background: rgba(255, 107, 107, 0.1); border-radius: 10px;">
+                        木の枝のように作業を分岐させる仕組み
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- スライド3: ブランチ戦略 -->
+        <div class="slide">
+            <h2>ブランチ戦略</h2>
+            <div class="branch-diagram">
+                <div class="branch-item branch-main">
+                    <h3>🎯 main/master</h3>
+                    <p>本番環境</p>
+                    <p>リリース可能</p>
+                </div>
+                <div class="branch-item branch-develop">
+                    <h3>🔧 develop</h3>
+                    <p>開発統合</p>
+                    <p>次期リリース</p>
+                </div>
+                <div class="branch-item branch-feature">
+                    <h3>✨ feature</h3>
+                    <p>新機能開発</p>
+                    <p>個別作業</p>
+                </div>
+            </div>
+            <div style="text-align: center; margin-top: 2rem; background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(20px); border-radius: 15px; padding: 1.5rem;">
+                <p style="font-size: 1.2rem;">feature → develop → main の流れで安全にコードを統合</p>
+            </div>
+        </div>
+
+        <!-- スライド4: 基本ワークフロー -->
+        <div class="slide">
+            <h2>基本ワークフロー</h2>
+            <div class="flow-chart">
+                <div class="flow-item">
+                    <h3>📝 Edit</h3>
+                    <p>ファイル編集</p>
+                </div>
+                <div class="flow-item">
+                    <h3>➕ Add</h3>
+                    <p>ステージング</p>
+                    <div class="command-box">git add .</div>
+                </div>
+                <div class="flow-item">
+                    <h3>💾 Commit</h3>
+                    <p>ローカル保存</p>
+                    <div class="command-box">git commit -m "message"</div>
+                </div>
+                <div class="flow-item">
+                    <h3>🚀 Push</h3>
+                    <p>リモート送信</p>
+                    <div class="command-box">git push origin main</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- スライド5: コマンド詳細 -->
+        <div class="slide">
+            <h2>主要コマンド</h2>
+            <div class="concept-grid">
+                <div class="concept-card">
+                    <h3>git add</h3>
+                    <p>変更をステージングエリアに追加</p>
+                    <div class="command-box">git add filename</div>
+                    <div class="command-box">git add .</div>
+                    <p style="margin-top: 1rem; color: #36d1dc;">コミットする準備をする</p>
+                </div>
+                <div class="concept-card">
+                    <h3>git commit</h3>
+                    <p>変更をローカルリポジトリに記録</p>
+                    <div class="command-box">git commit -m "Add new feature"</div>
+                    <p style="margin-top: 1rem; color: #36d1dc;">スナップショットを作成</p>
+                </div>
+                <div class="concept-card">
+                    <h3>git push</h3>
+                    <p>ローカルの変更をリモートに送信</p>
+                    <div class="command-box">git push origin develop</div>
+                    <p style="margin-top: 1rem; color: #36d1dc;">チームと共有する</p>
+                </div>
+                <div class="concept-card">
+                    <h3>git pull</h3>
+                    <p>リモートの最新を取得</p>
+                    <div class="command-box">git pull origin develop</div>
+                    <p style="margin-top: 1rem; color: #36d1dc;">fetch + merge を一度に</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- スライド6: プルリクエスト -->
+        <div class="slide">
+            <h2>プルリクエスト</h2>
+            <div style="text-align: center; margin-bottom: 2rem;">
+                <div style="background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(20px); border-radius: 20px; padding: 2rem; border: 1px solid rgba(255, 255, 255, 0.1);">
+                    <h3 style="color: #feca57; margin-bottom: 1rem;">コードレビューと品質管理</h3>
+                    <p style="font-size: 1.2rem; line-height: 1.8;">
+                        変更をメインブランチに統合する前に<br>
+                        チーム全体でコードを確認・議論する仕組み
+                    </p>
+                </div>
+            </div>
+            <div class="workflow-container">
+                <div class="workflow-step">
+                    <h3>1. 作業完了</h3>
+                    <p>フィーチャーブランチで開発</p>
+                </div>
+                <div class="workflow-step">
+                    <h3>2. Push</h3>
+                    <p>リモートに送信</p>
+                </div>
+                <div class="workflow-step">
+                    <h3>3. PR作成</h3>
+                    <p>レビュー依頼</p>
+                </div>
+                <div class="workflow-step">
+                    <h3>4. マージ</h3>
+                    <p>承認後に統合</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- スライド7: まとめ -->
+        <div class="slide">
+            <h2>実践のポイント</h2>
+            <div class="concept-grid">
+                <div class="concept-card">
+                    <h3>🔄 頻繁なコミット</h3>
+                    <p>小さな単位で変更を記録</p>
+                    <p style="color: #36d1dc;">意味のある作業ごとに保存</p>
+                </div>
+                <div class="concept-card">
+                    <h3>📝 明確なメッセージ</h3>
+                    <p>何を変更したかを簡潔に</p>
+                    <p style="color: #36d1dc;">未来の自分とチームのために</p>
+                </div>
+                <div class="concept-card">
+                    <h3>🌿 ブランチ活用</h3>
+                    <p>機能ごとに分岐して開発</p>
+                    <p style="color: #36d1dc;">安全で効率的な開発</p>
+                </div>
+                <div class="concept-card">
+                    <h3>👥 チーム連携</h3>
+                    <p>プルリクエストで品質向上</p>
+                    <p style="color: #36d1dc;">知識共有と相互学習</p>
+                </div>
+            </div>
+            <div style="text-align: center; margin-top: 3rem;">
+                <div style="background: linear-gradient(135deg, rgba(0, 212, 255, 0.1), rgba(91, 134, 229, 0.1)); border-radius: 20px; padding: 2rem;">
+                    <h3 style="color: #00d4ff; margin-bottom: 1rem;">🎯 成功への道筋</h3>
+                    <p style="font-size: 1.2rem;">実際に手を動かして体験することが最重要！</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- コントロール -->
+    <div class="controls">
+        <button class="btn" onclick="prevSlide()">← 前へ</button>
+        <button class="btn" onclick="nextSlide()">次へ →</button>
+    </div>
+
+    <!-- インジケーター -->
+    <div class="slide-indicator">
+        <div class="indicator-dot active"></div>
+        <div class="indicator-dot"></div>
+        <div class="indicator-dot"></div>
+        <div class="indicator-dot"></div>
+        <div class="indicator-dot"></div>
+        <div class="indicator-dot"></div>
+        <div class="indicator-dot"></div>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const indicators = document.querySelectorAll('.indicator-dot');
+        const totalSlides = slides.length;
+
+        function showSlide(n) {
+            slides[currentSlide].classList.remove('active');
+            indicators[currentSlide].classList.remove('active');
+            
+            currentSlide = (n + totalSlides) % totalSlides;
+            
+            slides[currentSlide].classList.add('active');
+            indicators[currentSlide].classList.add('active');
+            
+            // アニメーション効果を追加
+            const currentSlideElement = slides[currentSlide];
+            const cards = currentSlideElement.querySelectorAll('.concept-card, .workflow-step, .branch-item, .flow-item');
+            cards.forEach((card, index) => {
+                card.style.animationDelay = `${index * 0.1}s`;
+                card.classList.add('fade-in');
+            });
+        }
+
+        function nextSlide() {
+            showSlide(currentSlide + 1);
+        }
+
+        function prevSlide() {
+            showSlide(currentSlide - 1);
+        }
+
+        // キーボードナビゲーション
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowRight' || e.key === ' ') {
+                nextSlide();
+            } else if (e.key === 'ArrowLeft') {
+                prevSlide();
+            }
+        });
+
+        // インジケータークリック
+        indicators.forEach((dot, index) => {
+            dot.addEventListener('click', () => {
+                showSlide(index);
+            });
+        });
+
+        // 自動再生（オプション）
+        // setInterval(nextSlide, 10000);
+    </script>
+</body>
+</html>
