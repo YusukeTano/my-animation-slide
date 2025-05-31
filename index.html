@@ -3,579 +3,801 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Git Complete Guide - Future UI</title>
+    <title>AWS EC2 監視システム構成図</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-
+        
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
-            color: #fff;
-            overflow: hidden;
-            height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
         }
-
-        .slides-container {
-            position: relative;
-            width: 100%;
-            height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .slide {
-            display: none;
-            width: 90%;
-            max-width: 1200px;
+        
+        .container {
+            max-width: 1400px;
             margin: 0 auto;
-            padding: 2rem;
-            opacity: 0;
-            transform: translateY(30px);
-            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .slide.active {
-            display: block;
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        .slide h1 {
-            font-size: 3.5rem;
-            font-weight: 800;
-            background: linear-gradient(135deg, #00d4ff, #5b86e5, #36d1dc);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            text-align: center;
-            margin-bottom: 1rem;
-            text-shadow: 0 0 30px rgba(0, 212, 255, 0.3);
-        }
-
-        .slide h2 {
-            font-size: 2.5rem;
-            font-weight: 700;
-            background: linear-gradient(135deg, #ff6b6b, #feca57);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 2rem;
-            text-align: center;
-        }
-
-        .slide h3 {
-            font-size: 1.8rem;
-            color: #00d4ff;
-            margin-bottom: 1rem;
-            position: relative;
-        }
-
-        .slide h3::before {
-            content: '';
-            position: absolute;
-            left: -20px;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 4px;
-            height: 100%;
-            background: linear-gradient(to bottom, #00d4ff, #36d1dc);
-            border-radius: 2px;
-        }
-
-        .concept-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-            margin: 2rem 0;
-        }
-
-        .concept-card {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(20px);
+            background: rgba(255, 255, 255, 0.95);
             border-radius: 20px;
-            padding: 2rem;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #FF6B35 0%, #F7931E 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
             position: relative;
             overflow: hidden;
-            transition: all 0.3s ease;
         }
-
-        .concept-card:hover {
-            background: rgba(255, 255, 255, 0.08);
-            transform: translateY(-5px);
-            box-shadow: 0 20px 40px rgba(0, 212, 255, 0.1);
-        }
-
-        .concept-card::before {
+        
+        .header::before {
             content: '';
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 2px;
-            background: linear-gradient(90deg, #00d4ff, #5b86e5, #36d1dc);
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: repeating-linear-gradient(
+                45deg,
+                transparent,
+                transparent 10px,
+                rgba(255, 255, 255, 0.05) 10px,
+                rgba(255, 255, 255, 0.05) 20px
+            );
+            animation: shimmer 20s linear infinite;
         }
-
-        .workflow-container {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin: 2rem 0;
-            flex-wrap: wrap;
-            gap: 1rem;
+        
+        @keyframes shimmer {
+            0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
         }
-
-        .workflow-step {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(20px);
-            border-radius: 15px;
-            padding: 1.5rem;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            text-align: center;
-            flex: 1;
-            min-width: 200px;
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
             position: relative;
-            transition: all 0.3s ease;
+            z-index: 1;
         }
-
-        .workflow-step:hover {
-            background: rgba(0, 212, 255, 0.1);
-            transform: scale(1.05);
-        }
-
-        .workflow-step::after {
-            content: '→';
-            position: absolute;
-            right: -15px;
-            top: 50%;
-            transform: translateY(-50%);
-            font-size: 1.5rem;
-            color: #00d4ff;
-        }
-
-        .workflow-step:last-child::after {
-            display: none;
-        }
-
-        .command-box {
-            background: rgba(0, 0, 0, 0.5);
-            border-radius: 10px;
-            padding: 1rem;
-            margin: 1rem 0;
-            font-family: 'Monaco', 'Consolas', monospace;
-            border-left: 4px solid #00d4ff;
+        
+        .header p {
+            font-size: 1.2rem;
             position: relative;
+            z-index: 1;
+            opacity: 0.9;
         }
-
-        .command-box::before {
-            content: '$';
-            color: #00d4ff;
-            margin-right: 0.5rem;
+        
+        .content {
+            padding: 40px;
         }
-
-        .branch-diagram {
+        
+        .tabs {
             display: flex;
-            align-items: center;
-            margin: 2rem 0;
-            justify-content: center;
-            flex-wrap: wrap;
-            gap: 2rem;
+            border-bottom: 3px solid #e0e0e0;
+            margin-bottom: 30px;
+            background: #f8f9fa;
+            border-radius: 10px 10px 0 0;
         }
-
-        .branch-item {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(20px);
-            border-radius: 15px;
-            padding: 1.5rem;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            text-align: center;
-            min-width: 150px;
-            position: relative;
-        }
-
-        .branch-main {
-            border: 2px solid #ff6b6b;
-            background: rgba(255, 107, 107, 0.1);
-        }
-
-        .branch-develop {
-            border: 2px solid #feca57;
-            background: rgba(254, 202, 87, 0.1);
-        }
-
-        .branch-feature {
-            border: 2px solid #48dbfb;
-            background: rgba(72, 219, 251, 0.1);
-        }
-
-        .controls {
-            position: fixed;
-            bottom: 2rem;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            gap: 1rem;
-            z-index: 1000;
-        }
-
-        .btn {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 50px;
-            padding: 0.8rem 2rem;
-            color: #fff;
+        
+        .tab {
+            padding: 15px 25px;
             cursor: pointer;
-            transition: all 0.3s ease;
+            background: transparent;
+            border: none;
+            font-size: 1.1rem;
             font-weight: 600;
-        }
-
-        .btn:hover {
-            background: rgba(0, 212, 255, 0.2);
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(0, 212, 255, 0.2);
-        }
-
-        .slide-indicator {
-            position: fixed;
-            top: 2rem;
-            right: 2rem;
-            display: flex;
-            gap: 0.5rem;
-        }
-
-        .indicator-dot {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.3);
+            color: #666;
             transition: all 0.3s ease;
-        }
-
-        .indicator-dot.active {
-            background: #00d4ff;
-            box-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
-        }
-
-        .flow-chart {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 1rem;
-            align-items: center;
-            margin: 2rem 0;
-        }
-
-        .flow-item {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(20px);
-            border-radius: 15px;
-            padding: 1.5rem;
-            text-align: center;
-            border: 1px solid rgba(255, 255, 255, 0.1);
             position: relative;
+            flex: 1;
+            text-align: center;
         }
-
-        .flow-item::after {
-            content: '→';
-            position: absolute;
-            right: -15px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #00d4ff;
-            font-size: 1.5rem;
+        
+        .tab.active {
+            color: #FF6B35;
+            background: white;
+            border-radius: 10px 10px 0 0;
         }
-
-        .flow-item:last-child::after {
+        
+        .tab:hover {
+            color: #FF6B35;
+            transform: translateY(-2px);
+        }
+        
+        .tab-content {
             display: none;
+            animation: fadeIn 0.5s ease-in;
         }
-
-        @media (max-width: 768px) {
-            .slide h1 { font-size: 2.5rem; }
-            .slide h2 { font-size: 2rem; }
-            .workflow-container { flex-direction: column; }
-            .flow-chart { grid-template-columns: 1fr; }
-            .flow-item::after { display: none; }
+        
+        .tab-content.active {
+            display: block;
         }
-
-        .fade-in {
-            animation: fadeIn 0.8s ease-in-out;
-        }
-
+        
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
         }
-
-        .pulse {
-            animation: pulse 2s infinite;
+        
+        .diagram-container {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.05);
         }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
+        
+        .diagram-svg {
+            width: 100%;
+            height: auto;
+            max-height: 800px;
+        }
+        
+        .component {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .component:hover {
+            transform: scale(1.05);
+            filter: drop-shadow(0 5px 15px rgba(0, 0, 0, 0.3));
+        }
+        
+        .aws-component { fill: #FF9900; }
+        .terraform-component { fill: #623CE4; }
+        .ansible-component { fill: #EE0000; }
+        .newrelic-component { fill: #00AC69; }
+        .flow-arrow { stroke: #333; stroke-width: 2; fill: none; marker-end: url(#arrowhead); }
+        
+        .component-text {
+            font-family: 'Segoe UI', sans-serif;
+            font-size: 12px;
+            font-weight: 600;
+            fill: white;
+            text-anchor: middle;
+            dominant-baseline: middle;
+        }
+        
+        .section {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+            border-left: 5px solid #FF6B35;
+        }
+        
+        .section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.8rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .section h3 {
+            color: #555;
+            margin: 20px 0 15px 0;
+            font-size: 1.3rem;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 8px;
+        }
+        
+        .tech-stack {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .tech-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            transform: translateY(0);
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .tech-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        .tech-card h4 {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+        }
+        
+        .flow-step {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin: 15px 0;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .flow-step::before {
+            content: attr(data-step);
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+        
+        .status-deployed { background: #4CAF50; color: white; }
+        .status-disabled { background: #FF9800; color: white; }
+        .status-pending { background: #2196F3; color: white; }
+        
+        .resource-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .resource-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid #FF6B35;
+            transition: all 0.3s ease;
+        }
+        
+        .resource-item:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+        }
+        
+        .resource-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        
+        .resource-detail {
+            font-size: 0.9rem;
+            color: #666;
+            line-height: 1.4;
+        }
+        
+        .highlight {
+            background: linear-gradient(120deg, #a8edea 0%, #fed6e3 100%);
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px 0;
+            border-left: 5px solid #FF6B35;
+        }
+        
+        .code-block {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            margin: 15px 0;
+            overflow-x: auto;
+            box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                border-radius: 15px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+            
+            .tabs {
+                flex-direction: column;
+            }
+            
+            .tech-stack {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="slides-container">
-        <!-- スライド1: タイトル -->
-        <div class="slide active">
-            <h1 class="pulse">Git Complete Guide</h1>
-            <div style="text-align: center; margin-top: 3rem;">
-                <div style="font-size: 1.5rem; color: #36d1dc; margin-bottom: 2rem;">
-                    バージョン管理の完全理解
+    <div class="container">
+        <div class="header">
+            <h1>🏗️ AWS EC2 監視システム</h1>
+            <p>Terraform・Ansible・New Relicによる自動化された監視基盤</p>
+        </div>
+        
+        <div class="content">
+            <div class="tabs">
+                <button class="tab active" onclick="showTab('diagram')">📊 構成図</button>
+                <button class="tab" onclick="showTab('overview')">📋 概要</button>
+                <button class="tab" onclick="showTab('components')">🔧 コンポーネント</button>
+                <button class="tab" onclick="showTab('flow')">⚡処理フロー</button>
+                <button class="tab" onclick="showTab('status')">📈 現状</button>
+            </div>
+            
+            <div id="diagram" class="tab-content active">
+                <div class="diagram-container">
+                    <svg class="diagram-svg" viewBox="0 0 1200 800">
+                        <!-- 背景グリッド -->
+                        <defs>
+                            <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+                                <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#e0e0e0" stroke-width="0.5"/>
+                            </pattern>
+                            <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                                <polygon points="0 0, 10 3.5, 0 7" fill="#333" />
+                            </marker>
+                        </defs>
+                        <rect width="100%" height="100%" fill="url(#grid)" />
+                        
+                        <!-- AWS Cloud Area -->
+                        <rect x="50" y="80" width="700" height="500" fill="none" stroke="#FF9900" stroke-width="3" stroke-dasharray="10,5" rx="15"/>
+                        <text x="400" y="70" class="component-text" fill="#FF9900" font-size="16">AWS Cloud</text>
+                        
+                        <!-- VPC Area -->
+                        <rect x="80" y="120" width="640" height="420" fill="none" stroke="#FF9900" stroke-width="2" stroke-dasharray="5,3" rx="10"/>
+                        <text x="400" y="115" class="component-text" fill="#FF9900" font-size="14">VPC (vpc-0980f0041c555ae46)</text>
+                        
+                        <!-- Public Subnet -->
+                        <rect x="110" y="160" width="280" height="160" fill="rgba(255, 153, 0, 0.1)" stroke="#FF9900" stroke-width="1" rx="8"/>
+                        <text x="250" y="155" class="component-text" fill="#FF9900" font-size="12">Public Subnet</text>
+                        
+                        <!-- EC2 Instance -->
+                        <rect x="140" y="190" width="220" height="100" class="aws-component component" rx="10"/>
+                        <text x="250" y="230" class="component-text">EC2 Instance</text>
+                        <text x="250" y="245" class="component-text" font-size="10">i-0ea29d1ebd3b8901f</text>
+                        <text x="250" y="260" class="component-text" font-size="10">Amazon Linux 2023</text>
+                        <text x="250" y="275" class="component-text" font-size="10">Tag: cloudpack_newrelic=enabled</text>
+                        
+                        <!-- Internet Gateway -->
+                        <rect x="420" y="190" width="120" height="60" class="aws-component component" rx="8"/>
+                        <text x="480" y="215" class="component-text">Internet GW</text>
+                        <text x="480" y="230" class="component-text" font-size="10">igw-0ed7e7a75a8bde569</text>
+                        
+                        <!-- Private Area -->
+                        <rect x="110" y="360" width="580" height="160" fill="rgba(255, 153, 0, 0.05)" stroke="#FF9900" stroke-width="1" stroke-dasharray="3,2" rx="8"/>
+                        <text x="400" y="355" class="component-text" fill="#FF9900" font-size="12">AWS Services</text>
+                        
+                        <!-- SSM -->
+                        <rect x="140" y="390" width="100" height="60" class="aws-component component" rx="8"/>
+                        <text x="190" y="415" class="component-text">SSM</text>
+                        <text x="190" y="430" class="component-text" font-size="10">State Manager</text>
+                        
+                        <!-- S3 -->
+                        <rect x="270" y="390" width="100" height="60" class="aws-component component" rx="8"/>
+                        <text x="320" y="415" class="component-text">S3 Bucket</text>
+                        <text x="320" y="430" class="component-text" font-size="10">Ansible ZIP</text>
+                        
+                        <!-- Parameter Store -->
+                        <rect x="400" y="390" width="120" height="60" class="aws-component component" rx="8"/>
+                        <text x="460" y="415" class="component-text">Parameter Store</text>
+                        <text x="460" y="430" class="component-text" font-size="10">New Relic License</text>
+                        
+                        <!-- IAM -->
+                        <rect x="550" y="390" width="100" height="60" class="aws-component component" rx="8"/>
+                        <text x="600" y="415" class="component-text">IAM Role</text>
+                        <text x="600" y="430" class="component-text" font-size="10">EC2-SSM</text>
+                        
+                        <!-- Terraform AWS -->
+                        <rect x="80" y="20" width="150" height="40" class="terraform-component component" rx="8"/>
+                        <text x="155" y="45" class="component-text">Terraform (AWS)</text>
+                        
+                        <!-- Ansible -->
+                        <rect x="800" y="200" width="150" height="80" class="ansible-component component" rx="10"/>
+                        <text x="875" y="230" class="component-text">Ansible</text>
+                        <text x="875" y="245" class="component-text" font-size="10">newrelic_setup.yml</text>
+                        <text x="875" y="260" class="component-text" font-size="10">New Relic Agent</text>
+                        <text x="875" y="275" class="component-text" font-size="10">Install & Config</text>
+                        
+                        <!-- New Relic Platform -->
+                        <rect x="800" y="400" width="350" height="300" fill="rgba(0, 172, 105, 0.1)" stroke="#00AC69" stroke-width="3" stroke-dasharray="8,4" rx="15"/>
+                        <text x="975" y="395" class="component-text" fill="#00AC69" font-size="16">New Relic Platform</text>
+                        
+                        <!-- New Relic Components -->
+                        <rect x="830" y="430" width="120" height="50" class="newrelic-component component" rx="8"/>
+                        <text x="890" y="455" class="component-text">Alert Policy</text>
+                        <text x="890" y="468" class="component-text" font-size="10">tano-terraform-1036-2</text>
+                        
+                        <rect x="970" y="430" width="120" height="50" class="newrelic-component component" rx="8"/>
+                        <text x="1030" y="455" class="component-text">Alert Conditions</text>
+                        <text x="1030" y="468" class="component-text" font-size="10">CPU/Memory/Disk</text>
+                        
+                        <rect x="830" y="500" width="120" height="50" class="newrelic-component component" rx="8"/>
+                        <text x="890" y="525" class="component-text">Notifications</text>
+                        <text x="890" y="538" class="component-text" font-size="10">Email/Slack/PagerDuty</text>
+                        
+                        <rect x="970" y="500" width="120" height="50" class="newrelic-component component" rx="8"/>
+                        <text x="1030" y="525" class="component-text">Workflow</text>
+                        <text x="1030" y="538" class="component-text" font-size="10">Notification Rules</text>
+                        
+                        <!-- Terraform New Relic -->
+                        <rect x="1000" y="350" width="150" height="40" class="terraform-component component" rx="8"/>
+                        <text x="1075" y="375" class="component-text">Terraform (New Relic)</text>
+                        
+                        <!-- Arrows -->
+                        <path d="M 155 60 L 155 80" class="flow-arrow"/>
+                        <path d="M 250 190 L 190 160" class="flow-arrow"/>
+                        <path d="M 250 290 L 190 360" class="flow-arrow"/>
+                        <path d="M 250 290 L 320 360" class="flow-arrow"/>
+                        <path d="M 250 290 L 460 360" class="flow-arrow"/>
+                        <path d="M 360 240 L 420 220" class="flow-arrow"/>
+                        <path d="M 750 240 L 800 240" class="flow-arrow"/>
+                        <path d="M 875 280 L 875 320 L 950 320 L 950 400" class="flow-arrow"/>
+                        <path d="M 1075 390 L 1075 430" class="flow-arrow"/>
+                        
+                        <!-- Data Flow Labels -->
+                        <text x="400" y="320" class="component-text" fill="#666" font-size="10">SSM triggers Ansible</text>
+                        <text x="775" y="235" class="component-text" fill="#666" font-size="10">Deploy Agent</text>
+                        <text x="900" y="340" class="component-text" fill="#666" font-size="10">Monitor Data</text>
+                    </svg>
                 </div>
-                <div style="background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(20px); border-radius: 20px; padding: 2rem; border: 1px solid rgba(255, 255, 255, 0.1);">
-                    <p style="font-size: 1.2rem; line-height: 1.8;">
-                        🚀 モダンな開発において必須のGitを<br>
-                        基本概念から実践的な使い方まで完全解説
-                    </p>
+                
+                <div class="highlight">
+                    <h3>🎯 構成図のポイント</h3>
+                    <p>この図は、TerraformによるAWSインフラ構築から、AnsibleによるNew Relicエージェント自動インストール、そしてNew Relicでの監視設定までの全体的な流れを表現しています。各コンポーネント間の依存関係と通信フローが視覚的に理解できるよう設計されています。</p>
                 </div>
             </div>
-        </div>
-
-        <!-- スライド2: 基本概念 -->
-        <div class="slide">
-            <h2>Git基本概念</h2>
-            <div class="concept-grid">
-                <div class="concept-card fade-in">
-                    <h3>📁 リポジトリ</h3>
-                    <p><strong>ローカル:</strong> あなたのPC上の作業場所</p>
-                    <p><strong>リモート:</strong> サーバー上の共有場所</p>
-                    <div style="margin-top: 1rem; padding: 1rem; background: rgba(0, 212, 255, 0.1); border-radius: 10px;">
-                        プロジェクトの全てのファイルと変更履歴を格納
+            
+            <div id="overview" class="tab-content">
+                <div class="section">
+                    <h2>🎯 プロジェクト概要</h2>
+                    <p>本プロジェクトは、<strong>Infrastructure as Code</strong>の原則に基づき、AWSクラウド上にEC2インスタンスを構築し、自動的にNew Relic監視エージェントをインストール・設定する包括的な自動化システムです。</p>
+                    
+                    <div class="tech-stack">
+                        <div class="tech-card">
+                            <h4>🏗️ Terraform</h4>
+                            <p>AWSインフラとNew Relic監視設定の両方をコードで管理</p>
+                        </div>
+                        <div class="tech-card">
+                            <h4>⚙️ Ansible</h4>
+                            <p>SSM経由でEC2にNew Relicエージェントを自動インストール</p>
+                        </div>
+                        <div class="tech-card">
+                            <h4>☁️ AWS</h4>
+                            <p>EC2、VPC、SSM、S3、IAMなどのクラウドサービス</p>
+                        </div>
+                        <div class="tech-card">
+                            <h4>📊 New Relic</h4>
+                            <p>包括的なインフラストラクチャ監視とアラート機能</p>
+                        </div>
+                    </div>
+                    
+                    <div class="highlight">
+                        <h3>🌟 主な特徴</h3>
+                        <ul style="margin-left: 20px; line-height: 1.8;">
+                            <li><strong>完全自動化:</strong> コード実行のみでインフラから監視まで完全構築</li>
+                            <li><strong>セキュアな認証:</strong> SSM Parameter Storeによる安全な認証情報管理</li>
+                            <li><strong>柔軟な設定:</strong> Terraformによる設定変更とバージョン管理</li>
+                            <li><strong>スケーラブル:</strong> タグベースでの監視対象管理</li>
+                        </ul>
                     </div>
                 </div>
-                <div class="concept-card fade-in">
-                    <h3>🌿 ブランチ</h3>
-                    <p><strong>並行作業:</strong> 複数の機能を同時開発</p>
-                    <p><strong>安全性:</strong> メインコードに影響なし</p>
-                    <div style="margin-top: 1rem; padding: 1rem; background: rgba(255, 107, 107, 0.1); border-radius: 10px;">
-                        木の枝のように作業を分岐させる仕組み
+            </div>
+            
+            <div id="components" class="tab-content">
+                <div class="section">
+                    <h2>🔧 主要コンポーネント詳細</h2>
+                    
+                    <h3>🏗️ AWSインフラストラクチャ (Terraform管理)</h3>
+                    <div class="resource-list">
+                        <div class="resource-item">
+                            <div class="resource-title">VPC & ネットワーク</div>
+                            <div class="resource-detail">
+                                VPC ID: vpc-0980f0041c555ae46<br>
+                                パブリック/プライベートサブネット<br>
+                                インターネットゲートウェイ: igw-0ed7e7a75a8bde569
+                            </div>
+                        </div>
+                        <div class="resource-item">
+                            <div class="resource-title">EC2インスタンス</div>
+                            <div class="resource-detail">
+                                ID: i-0ea29d1ebd3b8901f<br>
+                                OS: Amazon Linux 2023 (t2.micro)<br>
+                                Elastic IP: 3.114.255.128<br>
+                                タグ: cloudpack_newrelic=enabled
+                            </div>
+                        </div>
+                        <div class="resource-item">
+                            <div class="resource-title">IAMロール</div>
+                            <div class="resource-detail">
+                                ロール名: tano-1036-ec2-ssm-role<br>
+                                SSM管理権限、Parameter Store読み取り<br>
+                                S3 Ansible ZIP読み取り権限
+                            </div>
+                        </div>
+                        <div class="resource-item">
+                            <div class="resource-title">SSM State Manager</div>
+                            <div class="resource-detail">
+                                アソシエーション: NewRelic-Agent-Setup-via-Ansible<br>
+                                スケジュール: 30分間隔<br>
+                                ターゲット: タグベース指定
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <h3>⚙️ Ansible設定</h3>
+                    <div class="code-block">
+# newrelic_setup.yml の主要構成
+- name: Install New Relic Infrastructure Agent
+  hosts: localhost
+  connection: local
+  tasks:
+    - name: Get New Relic License Key from SSM
+      set_fact:
+        newrelic_license_key: "{{ lookup('amazon.aws.ssm_parameter', '/tano-1036/newrelic/license_key') }}"
+    
+    - name: Install newrelic-infra package
+      yum:
+        name: newrelic-infra
+        state: present
+    
+    - name: Start and enable New Relic service
+      systemd:
+        name: newrelic-infra
+        state: started
+        enabled: yes
+                    </div>
+                    
+                    <h3>📊 New Relic監視設定</h3>
+                    <div class="resource-list">
+                        <div class="resource-item">
+                            <div class="resource-title">アラートポリシー</div>
+                            <div class="resource-detail">
+                                名前: tano-terraform-1036-2<br>
+                                EC2死活監視、CPU/メモリ/ディスク使用率監視
+                            </div>
+                        </div>
+                        <div class="resource-item">
+                            <div class="resource-title">通知チャネル</div>
+                            <div class="resource-detail">
+                                Email: alert@cloudpack.jp<br>
+                                Slack: C070MVDH8SC<br>
+                                PagerDuty統合
+                            </div>
+                        </div>
+                        <div class="resource-item">
+                            <div class="resource-title">フィルタリング条件</div>
+                            <div class="resource-detail">
+                                AWSアカウント: 040678122487<br>
+                                ラベル: cloudpack_newrelic = 'enabled'
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="flow" class="tab-content">
+                <div class="section">
+                    <h2>⚡ 自動化処理フロー</h2>
+                    
+                    <div class="flow-step" data-step="1">
+                        <h4>🏗️ AWSインフラ構築</h4>
+                        <p>Terraform (aws/) がVPC、EC2、IAMロール、SSM Associationなどの基盤リソースをプロビジョニング</p>
+                    </div>
+                    
+                    <div class="flow-step" data-step="2">
+                        <h4>📦 Ansible配備</h4>
+                        <p>Ansibleプレイブック一式をZIP化してS3バケットにアップロード。New Relicライセンスキーを事前にSSM Parameter Storeに格納</p>
+                    </div>
+                    
+                    <div class="flow-step" data-step="3">
+                        <h4>🔄 SSM自動実行</h4>
+                        <p>SSM State ManagerがEC2インスタンスのタグを検知し、30分間隔でAnsible実行をトリガー</p>
+                    </div>
+                    
+                    <div class="flow-step" data-step="4">
+                        <h4>⚙️ エージェントインストール</h4>
+                        <p>EC2上でAnsibleが実行され、SSMからライセンスキーを取得してNew Relicエージェントをインストール・設定</p>
+                    </div>
+                    
+                    <div class="flow-step" data-step="5">
+                        <h4>📊 監視設定適用</h4>
+                        <p>Terraform (newrelic/) がNew Relicプラットフォーム上にアラートポリシー、条件、通知チャネル、ワークフローを自動構築</p>
+                    </div>
+                    
+                    <div class="flow-step" data-step="6">
+                        <h4>📈 データ送信開始</h4>
+                        <p>New RelicエージェントがEC2のメトリクスを収集し、New Relicプラットフォームへリアルタイムでデータ送信</p>
+                    </div>
+                    
+                    <div class="flow-step" data-step="7">
+                        <h4>🚨 監視・アラート</h4>
+                        <p>設定されたアラート条件に基づき、異常検知時にはワークフロー経由で各通知チャネルへアラート送信</p>
+                    </div>
+                    
+                    <div class="highlight">
+                        <h3>🔄 継続的な自動化</h3>
+                        <p>このフローは一度だけでなく、<strong>SSM State Managerによる定期実行</strong>により継続的に維持されます。新しいEC2インスタンスに適切なタグを付与するだけで、自動的に監視対象に追加されます。</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="status" class="tab-content">
+                <div class="section">
+                    <h2>📈 現在のシステム状況</h2>
+                    
+                    <h3>✅ 完了済みコンポーネント</h3>
+                    <div class="resource-list">
+                        <div class="resource-item">
+                            <div class="resource-title">AWSインフラストラクチャ <span class="status-indicator status-deployed">DEPLOYED</span></div>
+                            <div class="resource-detail">
+                                VPC、EC2、IAM、SSM、S3の全リソースが正常に構築済み<br>
+                                Terraform状態管理も適切に実装
+                            </div>
+                        </div>
+                        <div class="resource-item">
+                            <div class="resource-title">New Relicエージェント <span class="status-indicator status-deployed">ACTIVE</span></div>
+                            <div class="resource-detail">
+                                バージョン 1.64.0 がインストール済み<br>
+                                メトリクス収集・送信が正常に動作中
+                            </div>
+                        </div>
+                        <div class="resource-item">
+                            <div class="resource-title">基本監視設定 <span class="status-indicator status-deployed">CONFIGURED</span></div>
+                            <div class="resource-detail">
+                                アラートポリシー、条件、通知チャネル、ワークフローが構築済み<br>
+                                New Relic UIでホストとして正常認識
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <h3>⚠️ 現在の制限事項</h3>
+                    <div class="resource-list">
+                        <div class="resource-item">
+                            <div class="resource-title">アラート通知 <span class="status-indicator status-disabled">DISABLED</span></div>
+                            <div class="resource-detail">
+                                variable.tf の alert_main.notification = "false" により無効化<br>
+                                テスト完了後に有効化予定
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <h3>🎯 次回実施予定作業</h3>
+                    <div class="flow-step" data-step="1">
+                        <h4>🔍 フィルタ条件確認</h4>
+                        <p>New Relicアラート条件の label.cloudpack_newrelic = 'enabled' フィルタが、EC2インスタンスの実際のタグ状態と整合性が取れているか最終確認</p>
+                    </div>
+                    
+                    <div class="flow-step" data-step="2">
+                        <h4>🚨 アラート有効化</h4>
+                        <p>newrelic/variable.tf の alert_main.notification を "true" に変更し、terraform apply でアラート通知を有効化</p>
+                    </div>
+                    
+                    <div class="flow-step" data-step="3">
+                        <h4>🧪 アラートテスト</h4>
+                        <p>EC2インスタンスに負荷をかけてアラート発火をテストし、各通知チャネル（Email/Slack/PagerDuty）への通知確認</p>
+                    </div>
+                    
+                    <div class="flow-step" data-step="4">
+                        <h4>📝 Gitコミット</h4>
+                        <p>全ての変更をフィーチャーブランチで実施後、developブランチへマージしてリポジトリに反映</p>
+                    </div>
+                    
+                    <div class="highlight">
+                        <h3>🎉 システムの価値</h3>
+                        <p>このシステムにより、<strong>新しいEC2インスタンスの監視開始が完全自動化</strong>されています。適切なタグを付与するだけで、数分以内にNew Relic監視が開始され、包括的なアラート体制が構築されます。Infrastructure as Codeの真の価値を実現したシステムと言えるでしょう。</p>
+                    </div>
+                    
+                    <div class="section">
+                        <h3>📊 監視対象メトリクス</h3>
+                        <div class="resource-list">
+                            <div class="resource-item">
+                                <div class="resource-title">死活監視</div>
+                                <div class="resource-detail">
+                                    New Relicエージェントからのハートビート監視<br>
+                                    エージェント停止やEC2ダウンを即座に検知
+                                </div>
+                            </div>
+                            <div class="resource-item">
+                                <div class="resource-title">CPU使用率</div>
+                                <div class="resource-detail">
+                                    WARN/CRITレベルでの閾値監視<br>
+                                    高負荷状態の早期検知と対応
+                                </div>
+                            </div>
+                            <div class="resource-item">
+                                <div class="resource-title">メモリ使用率</div>
+                                <div class="resource-detail">
+                                    メモリリークやメモリ不足の監視<br>
+                                    アプリケーション性能問題の予防
+                                </div>
+                            </div>
+                            <div class="resource-item">
+                                <div class="resource-title">ディスク使用率</div>
+                                <div class="resource-detail">
+                                    ストレージ容量の監視<br>
+                                    ディスク枯渇による障害の予防
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-
-        <!-- スライド3: ブランチ戦略 -->
-        <div class="slide">
-            <h2>ブランチ戦略</h2>
-            <div class="branch-diagram">
-                <div class="branch-item branch-main">
-                    <h3>🎯 main/master</h3>
-                    <p>本番環境</p>
-                    <p>リリース可能</p>
-                </div>
-                <div class="branch-item branch-develop">
-                    <h3>🔧 develop</h3>
-                    <p>開発統合</p>
-                    <p>次期リリース</p>
-                </div>
-                <div class="branch-item branch-feature">
-                    <h3>✨ feature</h3>
-                    <p>新機能開発</p>
-                    <p>個別作業</p>
-                </div>
-            </div>
-            <div style="text-align: center; margin-top: 2rem; background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(20px); border-radius: 15px; padding: 1.5rem;">
-                <p style="font-size: 1.2rem;">feature → develop → main の流れで安全にコードを統合</p>
-            </div>
-        </div>
-
-        <!-- スライド4: 基本ワークフロー -->
-        <div class="slide">
-            <h2>基本ワークフロー</h2>
-            <div class="flow-chart">
-                <div class="flow-item">
-                    <h3>📝 Edit</h3>
-                    <p>ファイル編集</p>
-                </div>
-                <div class="flow-item">
-                    <h3>➕ Add</h3>
-                    <p>ステージング</p>
-                    <div class="command-box">git add .</div>
-                </div>
-                <div class="flow-item">
-                    <h3>💾 Commit</h3>
-                    <p>ローカル保存</p>
-                    <div class="command-box">git commit -m "message"</div>
-                </div>
-                <div class="flow-item">
-                    <h3>🚀 Push</h3>
-                    <p>リモート送信</p>
-                    <div class="command-box">git push origin main</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- スライド5: コマンド詳細 -->
-        <div class="slide">
-            <h2>主要コマンド</h2>
-            <div class="concept-grid">
-                <div class="concept-card">
-                    <h3>git add</h3>
-                    <p>変更をステージングエリアに追加</p>
-                    <div class="command-box">git add filename</div>
-                    <div class="command-box">git add .</div>
-                    <p style="margin-top: 1rem; color: #36d1dc;">コミットする準備をする</p>
-                </div>
-                <div class="concept-card">
-                    <h3>git commit</h3>
-                    <p>変更をローカルリポジトリに記録</p>
-                    <div class="command-box">git commit -m "Add new feature"</div>
-                    <p style="margin-top: 1rem; color: #36d1dc;">スナップショットを作成</p>
-                </div>
-                <div class="concept-card">
-                    <h3>git push</h3>
-                    <p>ローカルの変更をリモートに送信</p>
-                    <div class="command-box">git push origin develop</div>
-                    <p style="margin-top: 1rem; color: #36d1dc;">チームと共有する</p>
-                </div>
-                <div class="concept-card">
-                    <h3>git pull</h3>
-                    <p>リモートの最新を取得</p>
-                    <div class="command-box">git pull origin develop</div>
-                    <p style="margin-top: 1rem; color: #36d1dc;">fetch + merge を一度に</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- スライド6: プルリクエスト -->
-        <div class="slide">
-            <h2>プルリクエスト</h2>
-            <div style="text-align: center; margin-bottom: 2rem;">
-                <div style="background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(20px); border-radius: 20px; padding: 2rem; border: 1px solid rgba(255, 255, 255, 0.1);">
-                    <h3 style="color: #feca57; margin-bottom: 1rem;">コードレビューと品質管理</h3>
-                    <p style="font-size: 1.2rem; line-height: 1.8;">
-                        変更をメインブランチに統合する前に<br>
-                        チーム全体でコードを確認・議論する仕組み
-                    </p>
-                </div>
-            </div>
-            <div class="workflow-container">
-                <div class="workflow-step">
-                    <h3>1. 作業完了</h3>
-                    <p>フィーチャーブランチで開発</p>
-                </div>
-                <div class="workflow-step">
-                    <h3>2. Push</h3>
-                    <p>リモートに送信</p>
-                </div>
-                <div class="workflow-step">
-                    <h3>3. PR作成</h3>
-                    <p>レビュー依頼</p>
-                </div>
-                <div class="workflow-step">
-                    <h3>4. マージ</h3>
-                    <p>承認後に統合</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- スライド7: まとめ -->
-        <div class="slide">
-            <h2>実践のポイント</h2>
-            <div class="concept-grid">
-                <div class="concept-card">
-                    <h3>🔄 頻繁なコミット</h3>
-                    <p>小さな単位で変更を記録</p>
-                    <p style="color: #36d1dc;">意味のある作業ごとに保存</p>
-                </div>
-                <div class="concept-card">
-                    <h3>📝 明確なメッセージ</h3>
-                    <p>何を変更したかを簡潔に</p>
-                    <p style="color: #36d1dc;">未来の自分とチームのために</p>
-                </div>
-                <div class="concept-card">
-                    <h3>🌿 ブランチ活用</h3>
-                    <p>機能ごとに分岐して開発</p>
-                    <p style="color: #36d1dc;">安全で効率的な開発</p>
-                </div>
-                <div class="concept-card">
-                    <h3>👥 チーム連携</h3>
-                    <p>プルリクエストで品質向上</p>
-                    <p style="color: #36d1dc;">知識共有と相互学習</p>
-                </div>
-            </div>
-            <div style="text-align: center; margin-top: 3rem;">
-                <div style="background: linear-gradient(135deg, rgba(0, 212, 255, 0.1), rgba(91, 134, 229, 0.1)); border-radius: 20px; padding: 2rem;">
-                    <h3 style="color: #00d4ff; margin-bottom: 1rem;">🎯 成功への道筋</h3>
-                    <p style="font-size: 1.2rem;">実際に手を動かして体験することが最重要！</p>
-                </div>
-            </div>
-        </div>
     </div>
-
-    <!-- コントロール -->
-    <div class="controls">
-        <button class="btn" onclick="prevSlide()">← 前へ</button>
-        <button class="btn" onclick="nextSlide()">次へ →</button>
-    </div>
-
-    <!-- インジケーター -->
-    <div class="slide-indicator">
-        <div class="indicator-dot active"></div>
-        <div class="indicator-dot"></div>
-        <div class="indicator-dot"></div>
-        <div class="indicator-dot"></div>
-        <div class="indicator-dot"></div>
-        <div class="indicator-dot"></div>
-        <div class="indicator-dot"></div>
-    </div>
-
+    
     <script>
-        let currentSlide = 0;
-        const slides = document.querySelectorAll('.slide');
-        const indicators = document.querySelectorAll('.indicator-dot');
-        const totalSlides = slides.length;
-
-        function showSlide(n) {
-            slides[currentSlide].classList.remove('active');
-            indicators[currentSlide].classList.remove('active');
-            
-            currentSlide = (n + totalSlides) % totalSlides;
-            
-            slides[currentSlide].classList.add('active');
-            indicators[currentSlide].classList.add('active');
-            
-            // アニメーション効果を追加
-            const currentSlideElement = slides[currentSlide];
-            const cards = currentSlideElement.querySelectorAll('.concept-card, .workflow-step, .branch-item, .flow-item');
-            cards.forEach((card, index) => {
-                card.style.animationDelay = `${index * 0.1}s`;
-                card.classList.add('fade-in');
+        function showTab(tabName) {
+            // Hide all tab contents
+            const tabContents = document.querySelectorAll('.tab-content');
+            tabContents.forEach(content => {
+                content.classList.remove('active');
             });
+            
+            // Remove active class from all tabs
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab content
+            document.getElementById(tabName).classList.add('active');
+            
+            // Add active class to clicked tab
+            event.target.classList.add('active');
         }
-
-        function nextSlide() {
-            showSlide(currentSlide + 1);
-        }
-
-        function prevSlide() {
-            showSlide(currentSlide - 1);
-        }
-
-        // キーボードナビゲーション
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'ArrowRight' || e.key === ' ') {
-                nextSlide();
-            } else if (e.key === 'ArrowLeft') {
-                prevSlide();
-            }
-        });
-
-        // インジケータークリック
-        indicators.forEach((dot, index) => {
-            dot.addEventListener('click', () => {
-                showSlide(index);
+        
+        // Add hover effects to diagram components
+        document.addEventListener('DOMContentLoaded', function() {
+            const components = document.querySelectorAll('.component');
+            components.forEach(component => {
+                component.addEventListener('mouseenter', function() {
+                    this.style.filter = 'brightness(1.2) drop-shadow(0 5px 15px rgba(0,0,0,0.3))';
+                });
+                
+                component.addEventListener('mouseleave', function() {
+                    this.style.filter = 'none';
+                });
+                
+                component.addEventListener('click', function() {
+                    // Simple animation on click
+                    this.style.transform = 'scale(0.95)';
+                    setTimeout(() => {
+                        this.style.transform = 'scale(1)';
+                    }, 150);
+                });
             });
         });
-
-        // 自動再生（オプション）
-        // setInterval(nextSlide, 10000);
+        
+        // Add smooth scrolling effect
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                document.querySelector('.content').scrollTop = 0;
+            });
+        });
     </script>
 </body>
 </html>
