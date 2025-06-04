@@ -1,1 +1,528 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub Actions AWS OIDC連携</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #1a1a2e;
+            color: #fff;
+            overflow: hidden;
+        }
+        
+        .presentation {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .slide {
+            width: 90%;
+            max-width: 1200px;
+            height: 85vh;
+            background: linear-gradient(135deg, #0f3460 0%, #16213e 100%);
+            border-radius: 20px;
+            padding: 60px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            display: none;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .slide.active {
+            display: block;
+            animation: slideIn 0.5s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        h1 {
+            font-size: 3em;
+            margin-bottom: 30px;
+            background: linear-gradient(45deg, #4fbdba, #7ec8e3);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-align: center;
+        }
+        
+        h2 {
+            font-size: 2.2em;
+            margin-bottom: 20px;
+            color: #7ec8e3;
+        }
+        
+        .navigation {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+            z-index: 1000;
+        }
+        
+        button {
+            padding: 12px 24px;
+            background: #4fbdba;
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        button:hover {
+            background: #7ec8e3;
+            transform: translateY(-2px);
+        }
+        
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .slide-number {
+            position: absolute;
+            top: 30px;
+            right: 30px;
+            font-size: 1.2em;
+            color: #7ec8e3;
+        }
+        
+        .diagram {
+            margin: 40px 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .old-method, .new-method {
+            width: 100%;
+            max-width: 900px;
+        }
+        
+        .box {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid #4fbdba;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 20px 0;
+            backdrop-filter: blur(10px);
+        }
+        
+        .highlight {
+            color: #ffd93d;
+            font-weight: bold;
+        }
+        
+        ul {
+            font-size: 1.3em;
+            line-height: 2;
+            margin: 20px 0;
+        }
+        
+        .flow-diagram {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin: 40px 0;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        
+        .flow-item {
+            background: rgba(79, 189, 186, 0.2);
+            border: 2px solid #4fbdba;
+            border-radius: 15px;
+            padding: 20px 30px;
+            text-align: center;
+            flex: 1;
+            min-width: 200px;
+            position: relative;
+            transition: all 0.3s;
+        }
+        
+        .flow-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(79, 189, 186, 0.3);
+        }
+        
+        .arrow {
+            position: absolute;
+            right: -30px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 2em;
+            color: #4fbdba;
+        }
+        
+        .comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-top: 30px;
+        }
+        
+        .comparison-item {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 30px;
+            border: 2px solid transparent;
+        }
+        
+        .comparison-item.old {
+            border-color: #e74c3c;
+        }
+        
+        .comparison-item.new {
+            border-color: #2ecc71;
+        }
+        
+        .comparison-item h3 {
+            margin-top: 0;
+            font-size: 1.5em;
+        }
+        
+        .icon {
+            font-size: 3em;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .benefits {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+        
+        .benefit-card {
+            background: linear-gradient(135deg, rgba(79, 189, 186, 0.2), rgba(126, 200, 227, 0.2));
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        
+        .benefit-card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 15px 40px rgba(79, 189, 186, 0.3);
+        }
+        
+        .benefit-icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+        }
+        
+        @media (max-width: 768px) {
+            .slide {
+                padding: 30px;
+            }
+            
+            h1 {
+                font-size: 2em;
+            }
+            
+            h2 {
+                font-size: 1.5em;
+            }
+            
+            .comparison {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="presentation">
+        <!-- スライド1: タイトル -->
+        <div class="slide active">
+            <div class="slide-number">1 / 7</div>
+            <h1>GitHub Actions から AWS へ<br>安全にアクセスする仕組み</h1>
+            <div style="text-align: center; margin-top: 60px;">
+                <div style="font-size: 2em; margin-bottom: 30px;">🔐</div>
+                <h2 style="text-align: center;">IAMロール + OIDC を使った<br>セキュアな認証方式</h2>
+            </div>
+        </div>
 
+        <!-- スライド2: 従来の方法の問題点 -->
+        <div class="slide">
+            <div class="slide-number">2 / 7</div>
+            <h2>従来の方法：アクセスキー方式の課題</h2>
+            <div class="old-method">
+                <div class="box" style="border-color: #e74c3c;">
+                    <div class="icon">⚠️</div>
+                    <h3 style="color: #e74c3c; text-align: center;">アクセスキー + シークレットキー</h3>
+                    <ul>
+                        <li>🔑 <span class="highlight">長期的な認証情報</span>（有効期限なし）</li>
+                        <li>📋 GitHub Secretsに保存が必要</li>
+                        <li>🚨 漏洩時のリスクが<span class="highlight">長期間継続</span></li>
+                        <li>🔄 定期的なキーローテーションが必要</li>
+                        <li>👤 キーの管理が煩雑</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- スライド3: OIDC とは -->
+        <div class="slide">
+            <div class="slide-number">3 / 7</div>
+            <h2>OIDC (OpenID Connect) とは？</h2>
+            <div class="box">
+                <div style="text-align: center; margin-bottom: 30px;">
+                    <div class="icon">🤝</div>
+                </div>
+                <p style="font-size: 1.4em; line-height: 1.8; text-align: center;">
+                    <span class="highlight">「私は確かに GitHub Actions です」</span><br>
+                    と証明するための共通ルール（プロトコル）
+                </p>
+                <div class="flow-diagram" style="margin-top: 50px;">
+                    <div class="flow-item">
+                        <div>GitHub Actions</div>
+                        <div class="arrow">→</div>
+                    </div>
+                    <div class="flow-item">
+                        <div>IDトークン発行</div>
+                        <div style="font-size: 0.8em; margin-top: 10px;">
+                            ・リポジトリ名<br>
+                            ・ブランチ名<br>
+                            ・実行者情報
+                        </div>
+                        <div class="arrow">→</div>
+                    </div>
+                    <div class="flow-item">
+                        <div>AWS が検証</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- スライド4: 全体の流れ（構成図） -->
+        <div class="slide">
+            <div class="slide-number">4 / 7</div>
+            <h2>OIDC認証の全体フロー</h2>
+            <svg viewBox="0 0 1000 600" style="width: 100%; max-height: 70vh;">
+                <!-- GitHub側 -->
+                <g>
+                    <rect x="50" y="50" width="400" height="200" rx="15" fill="rgba(79, 189, 186, 0.2)" stroke="#4fbdba" stroke-width="2"/>
+                    <text x="250" y="80" text-anchor="middle" fill="#4fbdba" font-size="20" font-weight="bold">GitHub</text>
+                    
+                    <rect x="80" y="110" width="140" height="60" rx="10" fill="rgba(255, 255, 255, 0.1)" stroke="#fff" stroke-width="1"/>
+                    <text x="150" y="145" text-anchor="middle" fill="#fff" font-size="14">Actions Workflow</text>
+                    
+                    <rect x="280" y="110" width="140" height="60" rx="10" fill="rgba(255, 255, 255, 0.1)" stroke="#fff" stroke-width="1"/>
+                    <text x="350" y="145" text-anchor="middle" fill="#fff" font-size="14">OIDC Provider</text>
+                    
+                    <!-- 矢印1: ワークフロー → OIDCプロバイダ -->
+                    <path d="M 220 140 L 280 140" stroke="#7ec8e3" stroke-width="2" marker-end="url(#arrowhead)"/>
+                    <text x="250" y="130" text-anchor="middle" fill="#7ec8e3" font-size="12">1. 要求</text>
+                    
+                    <!-- 矢印2: OIDCプロバイダ → ワークフロー -->
+                    <path d="M 280 150 L 220 150" stroke="#7ec8e3" stroke-width="2" marker-end="url(#arrowhead)"/>
+                    <text x="250" y="170" text-anchor="middle" fill="#7ec8e3" font-size="12">2. IDトークン</text>
+                </g>
+                
+                <!-- AWS側 -->
+                <g>
+                    <rect x="550" y="50" width="400" height="500" rx="15" fill="rgba(126, 200, 227, 0.2)" stroke="#7ec8e3" stroke-width="2"/>
+                    <text x="750" y="80" text-anchor="middle" fill="#7ec8e3" font-size="20" font-weight="bold">AWS</text>
+                    
+                    <rect x="580" y="110" width="140" height="60" rx="10" fill="rgba(255, 255, 255, 0.1)" stroke="#fff" stroke-width="1"/>
+                    <text x="650" y="145" text-anchor="middle" fill="#fff" font-size="14">OIDC ID Provider</text>
+                    
+                    <rect x="780" y="110" width="140" height="60" rx="10" fill="rgba(255, 255, 255, 0.1)" stroke="#fff" stroke-width="1"/>
+                    <text x="850" y="145" text-anchor="middle" fill="#fff" font-size="14">STS</text>
+                    
+                    <rect x="680" y="250" width="140" height="60" rx="10" fill="rgba(255, 255, 255, 0.1)" stroke="#fff" stroke-width="1"/>
+                    <text x="750" y="285" text-anchor="middle" fill="#fff" font-size="14">IAM Role</text>
+                    
+                    <rect x="680" y="380" width="140" height="60" rx="10" fill="rgba(255, 217, 61, 0.3)" stroke="#ffd93d" stroke-width="2"/>
+                    <text x="750" y="415" text-anchor="middle" fill="#ffd93d" font-size="14">S3 Bucket</text>
+                </g>
+                
+                <!-- 矢印3: GitHub → AWS STS -->
+                <path d="M 150 190 Q 500 300 780 140" stroke="#2ecc71" stroke-width="3" fill="none" marker-end="url(#arrowhead-green)"/>
+                <text x="450" y="240" text-anchor="middle" fill="#2ecc71" font-size="14" font-weight="bold">3. IDトークン提示</text>
+                
+                <!-- 矢印4: STS → OIDC Provider -->
+                <path d="M 780 140 L 720 140" stroke="#fff" stroke-width="2" marker-end="url(#arrowhead)"/>
+                <text x="750" y="130" text-anchor="middle" fill="#fff" font-size="12">4. 検証</text>
+                
+                <!-- 矢印5: STS → Role -->
+                <path d="M 850 170 L 750 250" stroke="#fff" stroke-width="2" marker-end="url(#arrowhead)"/>
+                
+                <!-- 矢印6: AWS → GitHub -->
+                <path d="M 780 160 Q 500 350 150 210" stroke="#ffd93d" stroke-width="3" fill="none" marker-end="url(#arrowhead-yellow)"/>
+                <text x="450" y="330" text-anchor="middle" fill="#ffd93d" font-size="14" font-weight="bold">5. 一時認証情報</text>
+                
+                <!-- 矢印7: GitHub → S3 -->
+                <path d="M 150 230 Q 400 450 680 410" stroke="#e74c3c" stroke-width="3" fill="none" marker-end="url(#arrowhead-red)"/>
+                <text x="400" y="420" text-anchor="middle" fill="#e74c3c" font-size="14" font-weight="bold">6. S3アクセス</text>
+                
+                <!-- 矢印の定義 -->
+                <defs>
+                    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                        <polygon points="0 0, 10 3.5, 0 7" fill="#fff"/>
+                    </marker>
+                    <marker id="arrowhead-green" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                        <polygon points="0 0, 10 3.5, 0 7" fill="#2ecc71"/>
+                    </marker>
+                    <marker id="arrowhead-yellow" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                        <polygon points="0 0, 10 3.5, 0 7" fill="#ffd93d"/>
+                    </marker>
+                    <marker id="arrowhead-red" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                        <polygon points="0 0, 10 3.5, 0 7" fill="#e74c3c"/>
+                    </marker>
+                </defs>
+            </svg>
+        </div>
+
+        <!-- スライド5: 詳細な処理フロー -->
+        <div class="slide">
+            <div class="slide-number">5 / 7</div>
+            <h2>認証フローの詳細</h2>
+            <div style="font-size: 1.2em; line-height: 2;">
+                <div class="flow-item" style="margin: 20px 0;">
+                    <strong>1️⃣ ワークフロー実行開始</strong>
+                    <p style="margin: 10px 0; font-size: 0.9em;">GitHub Actions がワークフローを開始し、OIDC プロバイダに IDトークンを要求</p>
+                </div>
+                <div class="flow-item" style="margin: 20px 0;">
+                    <strong>2️⃣ IDトークン発行</strong>
+                    <p style="margin: 10px 0; font-size: 0.9em;">リポジトリ名、ブランチ名、実行者情報を含む IDトークンが発行される</p>
+                </div>
+                <div class="flow-item" style="margin: 20px 0;">
+                    <strong>3️⃣ AWS STS へリクエスト</strong>
+                    <p style="margin: 10px 0; font-size: 0.9em;">AssumeRoleWithWebIdentity API を使用して IAMロールの引き受けを要求</p>
+                </div>
+                <div class="flow-item" style="margin: 20px 0;">
+                    <strong>4️⃣ トークン検証 & ポリシー確認</strong>
+                    <p style="margin: 10px 0; font-size: 0.9em;">発行元の確認と信頼ポリシーの条件（リポジトリ名等）をチェック</p>
+                </div>
+                <div class="flow-item" style="margin: 20px 0;">
+                    <strong>5️⃣ 一時認証情報の発行</strong>
+                    <p style="margin: 10px 0; font-size: 0.9em;"><span class="highlight">有効期限付き</span>（デフォルト1時間）の認証情報を取得</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- スライド6: 新旧比較 -->
+        <div class="slide">
+            <div class="slide-number">6 / 7</div>
+            <h2>従来の方法 vs OIDC方式</h2>
+            <div class="comparison">
+                <div class="comparison-item old">
+                    <h3 style="color: #e74c3c;">❌ 従来：アクセスキー方式</h3>
+                    <ul style="font-size: 1.1em;">
+                        <li>長期的な認証情報</li>
+                        <li>GitHub Secrets で管理</li>
+                        <li>漏洩時の影響大</li>
+                        <li>定期的な更新が必要</li>
+                        <li>アクセス制御が粗い</li>
+                    </ul>
+                </div>
+                <div class="comparison-item new">
+                    <h3 style="color: #2ecc71;">✅ 新方式：OIDC + IAMロール</h3>
+                    <ul style="font-size: 1.1em;">
+                        <li><span class="highlight">短期的な認証情報</span></li>
+                        <li>Secrets 不要</li>
+                        <li>漏洩時の影響を最小化</li>
+                        <li>自動的に期限切れ</li>
+                        <li>きめ細かいアクセス制御</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- スライド7: メリットまとめ -->
+        <div class="slide">
+            <div class="slide-number">7 / 7</div>
+            <h2>OIDC方式の主なメリット</h2>
+            <div class="benefits">
+                <div class="benefit-card">
+                    <div class="benefit-icon">🔒</div>
+                    <h3>セキュリティ向上</h3>
+                    <p>長期的な認証情報を保存する必要がなく、漏洩リスクを大幅に削減</p>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-icon">⏱️</div>
+                    <h3>自動的な有効期限</h3>
+                    <p>一時認証情報は自動的に期限切れになり、手動管理が不要</p>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-icon">🎯</div>
+                    <h3>細かいアクセス制御</h3>
+                    <p>特定のリポジトリ・ブランチからのアクセスのみを許可可能</p>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-icon">🚀</div>
+                    <h3>運用の簡素化</h3>
+                    <p>キーローテーションが不要で、運用負荷を削減</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="navigation">
+        <button onclick="previousSlide()" id="prevBtn">前へ</button>
+        <button onclick="nextSlide()" id="nextBtn">次へ</button>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+
+        function showSlide(n) {
+            slides.forEach(slide => slide.classList.remove('active'));
+            
+            if (n >= totalSlides) {
+                currentSlide = 0;
+            } else if (n < 0) {
+                currentSlide = totalSlides - 1;
+            } else {
+                currentSlide = n;
+            }
+            
+            slides[currentSlide].classList.add('active');
+            updateButtons();
+        }
+
+        function nextSlide() {
+            showSlide(currentSlide + 1);
+        }
+
+        function previousSlide() {
+            showSlide(currentSlide - 1);
+        }
+
+        function updateButtons() {
+            document.getElementById('prevBtn').disabled = currentSlide === 0;
+            document.getElementById('nextBtn').disabled = currentSlide === totalSlides - 1;
+        }
+
+        // キーボードナビゲーション
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight') nextSlide();
+            if (e.key === 'ArrowLeft') previousSlide();
+        });
+
+        // 初期化
+        updateButtons();
+    </script>
+</body>
+</html>
